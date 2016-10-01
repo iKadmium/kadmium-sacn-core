@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>kadmium-sacn-core</id>
+    <version>0.0.1</version>
+    <title>Kadmium-sACN-Core</title>
+    <authors>Jesse Higginson</authors>
+    <owners>Jesse Higginson</owners>
+    <projectUrl>https://github.com/iKadmium/kadmium-sacn-core</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A simple sACN library for .NET Core</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>sACN DMX</tags>
+  </metadata>
+</package>

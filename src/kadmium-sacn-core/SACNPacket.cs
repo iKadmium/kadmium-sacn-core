@@ -10,8 +10,8 @@ namespace kadmium_sacn_core
     public class SACNPacket
     {
         public static Int16 FLAGS = (0x7 << 12);
-        public static UInt16 FIRST_FOUR_BITS_MASK = 61440;
-        public static UInt16 LAST_TWELVE_BITS_MASK = 4095;
+        public static UInt16 FIRST_FOUR_BITS_MASK = 0b1111_0000_0000_0000;
+        public static UInt16 LAST_TWELVE_BITS_MASK = 0b0000_1111_1111_1111;
 
         public RootLayer RootLayer { get; set; }
 

@@ -21,9 +21,9 @@ namespace kadmium_sacn_core
         public byte[] Data { get { return RootLayer.FramingLayer.DMPLayer.Data; } set { RootLayer.FramingLayer.DMPLayer.Data = value; } }
         public Int16 UniverseID { get { return RootLayer.FramingLayer.UniverseID; } set { RootLayer.FramingLayer.UniverseID = value; } }
 
-        public SACNPacket(Int16 universeID, String sourceName, Guid uuid, byte sequenceID, byte[] data)
+        public SACNPacket(Int16 universeID, String sourceName, Guid uuid, byte sequenceID, byte[] data, byte priority)
         {
-            RootLayer = new RootLayer(uuid, sourceName, universeID, sequenceID, data);
+            RootLayer = new RootLayer(uuid, sourceName, universeID, sequenceID, data, priority);
         }
 
         public SACNPacket(RootLayer rootLayer)
@@ -60,9 +60,10 @@ namespace kadmium_sacn_core
         public Int16 Length { get { return (Int16)(38 + FramingLayer.Length); } }
         public Guid UUID { get; set; }
 
-        public RootLayer(Guid uuid, string sourceName, Int16 universeID, byte sequenceID, byte[] data)
+        public RootLayer(Guid uuid, string sourceName, Int16 universeID, byte sequenceID, byte[] data, byte priority)
         {
-            FramingLayer = new FramingLayer(sourceName, universeID, sequenceID, data);
+            UUID = uuid;
+            FramingLayer = new FramingLayer(sourceName, universeID, sequenceID, data, priority);
         }
 
         public RootLayer()
@@ -115,7 +116,6 @@ namespace kadmium_sacn_core
     public class FramingLayer
     {
         static Int32 FRAMING_VECTOR = 0x00000002;
-        static byte PRIORITY = 100;
         static Int16 RESERVED = 0;
         static byte OPTIONS = 0;
 
@@ -124,13 +124,15 @@ namespace kadmium_sacn_core
         public string SourceName { get; set; }
         public Int16 UniverseID { get; set; }
         public byte SequenceID { get; set; }
+        public byte Priority { get; set; }
 
-        public FramingLayer(string sourceName, Int16 universeID, byte sequenceID, byte[] data)
+        public FramingLayer(string sourceName, Int16 universeID, byte sequenceID, byte[] data, byte priority)
         {
             SourceName = sourceName;
             UniverseID = universeID;
             SequenceID = sequenceID;
             DMPLayer = new DMPLayer(data);
+            Priority = priority;
         }
 
         public FramingLayer()
@@ -151,7 +153,7 @@ namespace kadmium_sacn_core
             {
                 buffer.Write((byte)0);
             }
-            buffer.Write(PRIORITY);
+            buffer.Write(Priority);
             buffer.Write(RESERVED);
             buffer.Write(SequenceID);
             buffer.Write(OPTIONS);

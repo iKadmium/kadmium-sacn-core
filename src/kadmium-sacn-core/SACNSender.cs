@@ -34,9 +34,9 @@ namespace kadmium_sacn_core
         /// </summary>
         /// <param name="universeID">The universe ID to multicast to</param>
         /// <param name="data">Up to 512 bytes of DMX data</param>
-        public async Task Send(Int16 universeID, byte[] data)
+        public async Task Send(Int16 universeID, byte[] data, byte priority = 100)
         {
-            SACNPacket packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data);
+            SACNPacket packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
             byte[] packetBytes = packet.ToArray();
             SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, GetEndPoint(universeID, Port));
@@ -48,9 +48,9 @@ namespace kadmium_sacn_core
         /// <param name="hostname">The hostname to unicast to</param>
         /// <param name="universeID">The Universe ID</param>
         /// <param name="data">Up to 512 bytes of DMX data</param>
-        public async Task Send(string hostname, Int16 universeID, byte[] data)
+        public async Task Send(string hostname, Int16 universeID, byte[] data, byte priority = 100)
         {
-            SACNPacket packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data);
+            SACNPacket packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
             byte[] packetBytes = packet.ToArray();
             SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, hostname, Port);

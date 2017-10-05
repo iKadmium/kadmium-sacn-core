@@ -62,6 +62,7 @@ namespace kadmium_sacn_core
 
         public RootLayer(Guid uuid, string sourceName, Int16 universeID, byte sequenceID, byte[] data)
         {
+            UUID = uuid;
             FramingLayer = new FramingLayer(sourceName, universeID, sequenceID, data);
         }
 

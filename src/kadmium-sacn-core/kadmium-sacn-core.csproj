@@ -9,8 +9,17 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>0.0.3</Version>
-    <Authors>Jesse Higginson</Authors>
+    <Version>0.0.4</Version>
+    <Authors>Jesse Higginson;Hakan Lindestaf</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Kadmium-sACN-Core</Title>
+    <PackageProjectUrl>https://github.com/iKadmium/kadmium-sacn-core</PackageProjectUrl>
+    <Description>A simple sACN library for .NET Core</Description>
+    <Copyright>Copyright 2016-2017 Jesse Higginson</Copyright>
+    <PackageTags>sACN;DMX</PackageTags>
+    <PackageReleaseNotes>Sending returns a task as opposed to a void</PackageReleaseNotes>
+    <AssemblyVersion>0.0.4.0</AssemblyVersion>
+    <FileVersion>0.0.4.0</FileVersion>
   </PropertyGroup>
 
 </Project>

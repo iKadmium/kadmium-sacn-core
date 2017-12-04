@@ -9,7 +9,7 @@ namespace kadmium_sacn_core
 {
     public class SACNPacket
     {
-        public static Int16 FLAGS = (0x7 << 12);
+        public static UInt16 FLAGS = (0x7 << 12);
         public static UInt16 FIRST_FOUR_BITS_MASK = 0b1111_0000_0000_0000;
         public static UInt16 LAST_TWELVE_BITS_MASK = 0b0000_1111_1111_1111;
 
@@ -74,19 +74,21 @@ namespace kadmium_sacn_core
 
         public byte[] ToArray()
         {
-            MemoryStream stream = new MemoryStream(Length);
-            BinaryWriter buffer = new BigEndianBinaryWriter(stream);
+            using (var stream = new MemoryStream(Length))
+            using (var buffer = new BigEndianBinaryWriter(stream))
+            {
+                buffer.Write(PREAMBLE_LENGTH);
+                buffer.Write(POSTAMBLE_LENGTH);
+                buffer.Write(PACKET_IDENTIFIER);
+                UInt16 flagsAndRootLength = (UInt16)(SACNPacket.FLAGS | (UInt16)(Length - 16));
+                buffer.Write(flagsAndRootLength);
+                buffer.Write(ROOT_VECTOR);
+                buffer.Write(UUID.ToByteArray());
 
-            buffer.Write(PREAMBLE_LENGTH);
-            buffer.Write(POSTAMBLE_LENGTH);
-            buffer.Write(PACKET_IDENTIFIER);
-            Int16 flagsAndRootLength = (Int16)(SACNPacket.FLAGS | Length);
-            buffer.Write(flagsAndRootLength);
-            buffer.Write(ROOT_VECTOR);
-            buffer.Write(UUID.ToByteArray());
+                buffer.Write(FramingLayer.ToArray());
 
-            buffer.Write(FramingLayer.ToArray());
-            return stream.ToArray();
+                return stream.ToArray();
+            }
         }
 
         internal static RootLayer Parse(BigEndianBinaryReader buffer)
@@ -145,9 +147,10 @@ namespace kadmium_sacn_core
             using (var stream = new MemoryStream(Length))
             using (var buffer = new BigEndianBinaryWriter(stream))
             {
-                Int16 flagsAndFramingLength = (Int16)(SACNPacket.FLAGS | Length);
+                UInt16 flagsAndFramingLength = (UInt16)(SACNPacket.FLAGS | (UInt16)Length);
                 buffer.Write(flagsAndFramingLength);
                 buffer.Write(FRAMING_VECTOR);
+                //TODO: Check for max SourceName length
                 buffer.Write(Encoding.UTF8.GetBytes(SourceName));
                 for (int i = 0; i < 64 - SourceName.Length; i++)
                 {
@@ -199,7 +202,7 @@ namespace kadmium_sacn_core
         static Int16 ADDRESS_INCREMENT = 1;
         static byte ZERO_ADDRESS = 0x00;
 
-        public Int16 Length { get { return (Int16)(10 + Data.Length); } }
+        public Int16 Length { get { return (Int16)(11 + Data.Length); } }
 
         public byte[] Data { get; set; }
 
@@ -213,7 +216,7 @@ namespace kadmium_sacn_core
             using (var stream = new MemoryStream(Length))
             using (var buffer = new BigEndianBinaryWriter(stream))
             {
-                Int16 flagsAndDMPLength = (Int16)(SACNPacket.FLAGS | Length);
+                UInt16 flagsAndDMPLength = (UInt16)(SACNPacket.FLAGS | Length);
 
                 buffer.Write(flagsAndDMPLength);
                 buffer.Write(DMP_VECTOR);

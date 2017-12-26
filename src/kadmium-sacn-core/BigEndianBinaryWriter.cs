@@ -16,6 +16,12 @@ namespace kadmium_sacn_core
             base.Write(networkOrder);
         }
 
+        public override void Write(ushort value)
+        {
+            short networkOrder = System.Net.IPAddress.HostToNetworkOrder((short)value);
+            base.Write(networkOrder);
+        }
+
         public override void Write(int value)
         {
             int networkOrder = System.Net.IPAddress.HostToNetworkOrder(value);

@@ -25,6 +25,13 @@ namespace kadmium_sacn_core
             return System.Net.IPAddress.NetworkToHostOrder(converted);
         }
 
+        public override ushort ReadUInt16()
+        {
+            byte[] bytes = base.ReadBytes(2);
+            UInt16 converted = BitConverter.ToUInt16(bytes, 0);
+            return (ushort)System.Net.IPAddress.NetworkToHostOrder((short)converted);
+        }
+
         public override int ReadInt32()
         {
             byte[] bytes = base.ReadBytes(4);

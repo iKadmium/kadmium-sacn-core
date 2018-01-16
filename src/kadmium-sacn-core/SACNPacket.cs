@@ -9,7 +9,7 @@ namespace kadmium_sacn_core
 {
     public class SACNPacket
     {
-        public static Int16 FLAGS = (0x7 << 12);
+        public static UInt16 FLAGS = (0x7 << 12);
         public static UInt16 FIRST_FOUR_BITS_MASK = 0b1111_0000_0000_0000;
         public static UInt16 LAST_TWELVE_BITS_MASK = 0b0000_1111_1111_1111;
 
@@ -35,12 +35,13 @@ namespace kadmium_sacn_core
 
         public static SACNPacket Parse(byte[] packet)
         {
-            MemoryStream stream = new MemoryStream(packet);
-            BigEndianBinaryReader buffer = new BigEndianBinaryReader(stream);
+            using (var stream = new MemoryStream(packet))
+            using (var buffer = new BigEndianBinaryReader(stream))
+            {
+                var rootLayer = RootLayer.Parse(buffer);
 
-            RootLayer rootLayer = RootLayer.Parse(buffer);
-
-            return new SACNPacket(rootLayer);
+                return new SACNPacket(rootLayer);
+            }
         }
 
         public byte[] ToArray()
@@ -75,19 +76,21 @@ namespace kadmium_sacn_core
 
         public byte[] ToArray()
         {
-            MemoryStream stream = new MemoryStream(Length);
-            BinaryWriter buffer = new BigEndianBinaryWriter(stream);
+            using (var stream = new MemoryStream(Length))
+            using (var buffer = new BigEndianBinaryWriter(stream))
+            {
+                buffer.Write(PREAMBLE_LENGTH);
+                buffer.Write(POSTAMBLE_LENGTH);
+                buffer.Write(PACKET_IDENTIFIER);
+                UInt16 flagsAndRootLength = (UInt16)(SACNPacket.FLAGS | (UInt16)(Length - 16));
+                buffer.Write(flagsAndRootLength);
+                buffer.Write(ROOT_VECTOR);
+                buffer.Write(UUID.ToByteArray());
 
-            buffer.Write(PREAMBLE_LENGTH);
-            buffer.Write(POSTAMBLE_LENGTH);
-            buffer.Write(PACKET_IDENTIFIER);
-            Int16 flagsAndRootLength = (Int16)(SACNPacket.FLAGS | Length);
-            buffer.Write(flagsAndRootLength);
-            buffer.Write(ROOT_VECTOR);
-            buffer.Write(UUID.ToByteArray());
+                buffer.Write(FramingLayer.ToArray());
 
-            buffer.Write(FramingLayer.ToArray());
-            return stream.ToArray();
+                return stream.ToArray();
+            }
         }
 
         internal static RootLayer Parse(BigEndianBinaryReader buffer)
@@ -142,31 +145,32 @@ namespace kadmium_sacn_core
 
         public FramingLayer()
         {
-
         }
 
         public byte[] ToArray()
         {
-            MemoryStream stream = new MemoryStream(Length);
-            BinaryWriter buffer = new BigEndianBinaryWriter(stream);
-
-            Int16 flagsAndFramingLength = (Int16)(SACNPacket.FLAGS | Length);
-            buffer.Write(flagsAndFramingLength);
-            buffer.Write(FRAMING_VECTOR);
-            buffer.Write(Encoding.UTF8.GetBytes(SourceName));
-            for (int i = 0; i < FramingLayer.SourceNameLength - SourceName.Length; i++)
+            using (var stream = new MemoryStream(Length))
+            using (var buffer = new BigEndianBinaryWriter(stream))
             {
-                buffer.Write((byte)0);
+
+                UInt16 flagsAndFramingLength = (Int16)(SACNPacket.FLAGS | Length);
+                buffer.Write(flagsAndFramingLength);
+                buffer.Write(FRAMING_VECTOR);
+                buffer.Write(Encoding.UTF8.GetBytes(SourceName));
+                for (int i = 0; i < 64 - SourceName.Length; i++)
+                {
+                    buffer.Write((byte)0);
+                }
+                buffer.Write(Priority);
+                buffer.Write(RESERVED);
+                buffer.Write(SequenceID);
+                buffer.Write(OPTIONS);
+                buffer.Write(UniverseID);
+
+                buffer.Write(DMPLayer.ToArray());
+
+                return stream.ToArray();
             }
-            buffer.Write(Priority);
-            buffer.Write(RESERVED);
-            buffer.Write(SequenceID);
-            buffer.Write(OPTIONS);
-            buffer.Write(UniverseID);
-
-            buffer.Write(DMPLayer.ToArray());
-
-            return stream.ToArray();
         }
 
         internal static FramingLayer Parse(BigEndianBinaryReader buffer)
@@ -209,7 +213,7 @@ namespace kadmium_sacn_core
         static Int16 ADDRESS_INCREMENT = 1;
         static byte ZERO_ADDRESS = 0x00;
 
-        public Int16 Length { get { return (Int16)(10 + Data.Length); } }
+        public Int16 Length { get { return (Int16)(11 + Data.Length); } }
 
         public byte[] Data { get; set; }
 
@@ -220,21 +224,22 @@ namespace kadmium_sacn_core
 
         public byte[] ToArray()
         {
-            MemoryStream stream = new MemoryStream(Length);
-            BinaryWriter buffer = new BigEndianBinaryWriter(stream);
+            using (var stream = new MemoryStream(Length))
+            using (var buffer = new BigEndianBinaryWriter(stream))
+            {
+                UInt16 flagsAndDMPLength = (UInt16)(SACNPacket.FLAGS | Length);
 
-            Int16 flagsAndDMPLength = (Int16)(SACNPacket.FLAGS | Length);
+                buffer.Write(flagsAndDMPLength);
+                buffer.Write(DMP_VECTOR);
+                buffer.Write(ADDRESS_TYPE_AND_DATA_TYPE);
+                buffer.Write(FIRST_PROPERTY_ADDRESS);
+                buffer.Write(ADDRESS_INCREMENT);
+                buffer.Write((Int16)(Data.Length + 1));
+                buffer.Write(ZERO_ADDRESS);
+                buffer.Write(Data);
 
-            buffer.Write(flagsAndDMPLength);
-            buffer.Write(DMP_VECTOR);
-            buffer.Write(ADDRESS_TYPE_AND_DATA_TYPE);
-            buffer.Write(FIRST_PROPERTY_ADDRESS);
-            buffer.Write(ADDRESS_INCREMENT);
-            buffer.Write((Int16)(Data.Length + 1));
-            buffer.Write(ZERO_ADDRESS);
-            buffer.Write(Data);
-
-            return stream.ToArray();
+                return stream.ToArray();
+            }
         }
 
         internal static DMPLayer Parse(BigEndianBinaryReader buffer)
@@ -253,7 +258,7 @@ namespace kadmium_sacn_core
             byte startCode = buffer.ReadByte();
             byte[] properties = buffer.ReadBytes(propertyValueCount - 1);
 
-            DMPLayer dmpLayer = new DMPLayer(properties);
+            var dmpLayer = new DMPLayer(properties);
             return dmpLayer;
         }
     }

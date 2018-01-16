@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,9 +22,9 @@ namespace kadmium_sacn_core
         public Guid UUID { get { return RootLayer.UUID; } set { RootLayer.UUID = value; } }
         public byte SequenceID { get { return RootLayer.FramingLayer.SequenceID; } set { RootLayer.FramingLayer.SequenceID = value; } }
         public byte[] Data { get { return RootLayer.FramingLayer.DMPLayer.Data; } set { RootLayer.FramingLayer.DMPLayer.Data = value; } }
-        public Int16 UniverseID { get { return RootLayer.FramingLayer.UniverseID; } set { RootLayer.FramingLayer.UniverseID = value; } }
+        public UInt16 UniverseID { get { return RootLayer.FramingLayer.UniverseID; } set { RootLayer.FramingLayer.UniverseID = value; } }
 
-        public SACNPacket(Int16 universeID, String sourceName, Guid uuid, byte sequenceID, byte[] data, byte priority)
+        public SACNPacket(UInt16 universeID, String sourceName, Guid uuid, byte sequenceID, byte[] data, byte priority)
         {
             RootLayer = new RootLayer(uuid, sourceName, universeID, sequenceID, data, priority);
         }
@@ -63,7 +64,7 @@ namespace kadmium_sacn_core
         public Int16 Length { get { return (Int16)(38 + FramingLayer.Length); } }
         public Guid UUID { get; set; }
 
-        public RootLayer(Guid uuid, string sourceName, Int16 universeID, byte sequenceID, byte[] data, byte priority)
+        public RootLayer(Guid uuid, string sourceName, UInt16 universeID, byte sequenceID, byte[] data, byte priority)
         {
             UUID = uuid;
             FramingLayer = new FramingLayer(sourceName, universeID, sequenceID, data, priority);
@@ -119,26 +120,82 @@ namespace kadmium_sacn_core
         }
     }
 
+    public class FramingOptions
+    {
+        static int PreviewDataIndex = 7;
+        static int StreamTerminatedIndex = 6;
+        
+        private BitArray BitArray { get; set; }
+
+        public bool PreviewData
+        {
+            get
+            {
+                return BitArray.Get(PreviewDataIndex);
+            }
+            set
+            {
+                BitArray.Set(PreviewDataIndex, value);
+            }
+        }
+        public bool StreamTerminated
+        {
+            get
+            {
+                return BitArray.Get(StreamTerminatedIndex);
+            }
+            set
+            {
+                BitArray.Set(StreamTerminatedIndex, value);
+            }
+        }
+
+        public FramingOptions()
+        {
+            BitArray = new BitArray(8);
+        }
+
+        private FramingOptions(byte options)
+        {
+            BitArray = new BitArray(new[] { options });
+        }
+
+        public byte GetByte()
+        {
+            byte previewData = PreviewData ? (byte)(1 << PreviewDataIndex) : (byte)0;
+            byte streamTerminated = StreamTerminated ? (byte)(1 << StreamTerminatedIndex) : (byte)0;
+            return (byte)(previewData | streamTerminated);
+        }
+
+        public static FramingOptions Parse(byte options)
+        {
+            FramingOptions optionsObject = new FramingOptions(options);
+            return optionsObject;
+        }
+
+    }
+
     public class FramingLayer
     {
         static Int32 FRAMING_VECTOR = 0x00000002;
         static Int16 RESERVED = 0;
-        static byte OPTIONS = 0;
-
+        
         static int SourceNameLength = 64;
 
         public DMPLayer DMPLayer { get; set; }
-        public Int16 Length { get { return (Int16)(13 + SourceNameLength + DMPLayer.Length); } }
+        public UInt16 Length { get { return (UInt16)(13 + SourceNameLength + DMPLayer.Length); } }
         public string SourceName { get; set; }
-        public Int16 UniverseID { get; set; }
+        public UInt16 UniverseID { get; set; }
         public byte SequenceID { get; set; }
+        public FramingOptions Options { get; set; }
         public byte Priority { get; set; }
 
-        public FramingLayer(string sourceName, Int16 universeID, byte sequenceID, byte[] data, byte priority)
+        public FramingLayer(string sourceName, UInt16 universeID, byte sequenceID, byte[] data, byte priority)
         {
             SourceName = sourceName;
             UniverseID = universeID;
             SequenceID = sequenceID;
+            Options = new FramingOptions();
             DMPLayer = new DMPLayer(data);
             Priority = priority;
         }
@@ -153,18 +210,15 @@ namespace kadmium_sacn_core
             using (var buffer = new BigEndianBinaryWriter(stream))
             {
 
-                UInt16 flagsAndFramingLength = (Int16)(SACNPacket.FLAGS | Length);
+                UInt16 flagsAndFramingLength = (UInt16)(SACNPacket.FLAGS | Length);
                 buffer.Write(flagsAndFramingLength);
                 buffer.Write(FRAMING_VECTOR);
                 buffer.Write(Encoding.UTF8.GetBytes(SourceName));
-                for (int i = 0; i < 64 - SourceName.Length; i++)
-                {
-                    buffer.Write((byte)0);
-                }
+                buffer.Write(Enumerable.Repeat((byte)0, 64 - SourceName.Length).ToArray());
                 buffer.Write(Priority);
                 buffer.Write(RESERVED);
                 buffer.Write(SequenceID);
-                buffer.Write(OPTIONS);
+                buffer.Write(Options.GetByte());
                 buffer.Write(UniverseID);
 
                 buffer.Write(DMPLayer.ToArray());
@@ -189,14 +243,14 @@ namespace kadmium_sacn_core
             Debug.Assert(reserved == RESERVED);
             byte sequenceID = buffer.ReadByte();
             byte options = buffer.ReadByte();
-            Debug.Assert(options == OPTIONS);
-            Int16 universeID = buffer.ReadInt16();
+            UInt16 universeID = buffer.ReadUInt16();
 
             FramingLayer framingLayer = new FramingLayer()
             {
                 SourceName = sourceName,
                 Priority = priority,
                 SequenceID = sequenceID,
+                Options = FramingOptions.Parse(options),
                 UniverseID = universeID,
                 DMPLayer = DMPLayer.Parse(buffer)
             };

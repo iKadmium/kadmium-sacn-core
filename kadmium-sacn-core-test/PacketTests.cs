@@ -10,7 +10,7 @@ namespace kadmium_sacn_core_test
         [DataTestMethod]
         [DataRow((short)1, "Something", (byte)1, (byte)1)]
         [DataRow((short)12000, "Something Else", (byte)35, (byte)27)]
-        public void TestCreation(short universeID, string sourceName, byte sequenceID, byte priority)
+        public void TestCreation(UInt16 universeID, string sourceName, byte sequenceID, byte priority)
         {
             Guid guid = Guid.NewGuid();
 
@@ -34,7 +34,7 @@ namespace kadmium_sacn_core_test
         [DataTestMethod]
         [DataRow((short)1, "Something", (byte)1, (byte)1)]
         [DataRow((short)12000, "Something Else", (byte)35, (byte)27)]
-        public void TestCreationAndParsing(short universeID, string sourceName, byte sequenceID, byte priority)
+        public void TestCreationAndParsing(UInt16 universeID, string sourceName, byte sequenceID, byte priority)
         {
             Guid guid = Guid.NewGuid();
 

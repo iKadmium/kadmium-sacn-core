@@ -13,6 +13,8 @@ namespace kadmium_sacn_core
         public static UInt16 FIRST_FOUR_BITS_MASK = 0b1111_0000_0000_0000;
         public static UInt16 LAST_TWELVE_BITS_MASK = 0b0000_1111_1111_1111;
 
+        public static int MAX_PACKET_SIZE = 638;
+
         public RootLayer RootLayer { get; set; }
 
         public string SourceName { get { return RootLayer.FramingLayer.SourceName; } set { RootLayer.FramingLayer.SourceName = value; } }
@@ -90,8 +92,6 @@ namespace kadmium_sacn_core
 
         internal static RootLayer Parse(BigEndianBinaryReader buffer)
         {
-            RootLayer rootLayer = new RootLayer();
-
             Int16 preambleLength = buffer.ReadInt16();
             Debug.Assert(preambleLength == PREAMBLE_LENGTH);
             Int16 postambleLength = buffer.ReadInt16();
@@ -106,9 +106,12 @@ namespace kadmium_sacn_core
             Debug.Assert(vector == ROOT_VECTOR);
             Guid cid = new Guid(buffer.ReadBytes(16));
 
-            rootLayer.UUID = cid;
-            rootLayer.FramingLayer = FramingLayer.Parse(buffer);
-
+            RootLayer rootLayer = new RootLayer()
+            {
+                UUID = cid,
+                FramingLayer = FramingLayer.Parse(buffer)
+            };
+            
             return rootLayer;
         }
     }
@@ -119,8 +122,10 @@ namespace kadmium_sacn_core
         static Int16 RESERVED = 0;
         static byte OPTIONS = 0;
 
+        static int SourceNameLength = 64;
+
         public DMPLayer DMPLayer { get; set; }
-        public Int16 Length { get { return (Int16)(77 + DMPLayer.Length); } }
+        public Int16 Length { get { return (Int16)(13 + SourceNameLength + DMPLayer.Length); } }
         public string SourceName { get; set; }
         public Int16 UniverseID { get; set; }
         public byte SequenceID { get; set; }
@@ -149,7 +154,7 @@ namespace kadmium_sacn_core
             buffer.Write(flagsAndFramingLength);
             buffer.Write(FRAMING_VECTOR);
             buffer.Write(Encoding.UTF8.GetBytes(SourceName));
-            for (int i = 0; i < 64 - SourceName.Length; i++)
+            for (int i = 0; i < FramingLayer.SourceNameLength - SourceName.Length; i++)
             {
                 buffer.Write((byte)0);
             }
@@ -177,14 +182,20 @@ namespace kadmium_sacn_core
             string sourceName = new string(Encoding.UTF8.GetChars(sourceNameBytes)).TrimEnd('\0');
             byte priority = buffer.ReadByte();
             Int16 reserved = buffer.ReadInt16();
+            Debug.Assert(reserved == RESERVED);
             byte sequenceID = buffer.ReadByte();
             byte options = buffer.ReadByte();
+            Debug.Assert(options == OPTIONS);
             Int16 universeID = buffer.ReadInt16();
 
-            FramingLayer framingLayer = new FramingLayer();
-            framingLayer.SequenceID = sequenceID;
-            framingLayer.SourceName = sourceName;
-            framingLayer.DMPLayer = DMPLayer.Parse(buffer);
+            FramingLayer framingLayer = new FramingLayer()
+            {
+                SourceName = sourceName,
+                Priority = priority,
+                SequenceID = sequenceID,
+                UniverseID = universeID,
+                DMPLayer = DMPLayer.Parse(buffer)
+            };
 
             return framingLayer;
         }

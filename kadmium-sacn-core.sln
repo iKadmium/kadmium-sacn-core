@@ -1,13 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{027C1A93-5E9D-4952-9426-5DBAFF13CF56}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1BB50F91-0905-4E1C-B00D-B7E45CD510B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "kadmium-sacn-core", "src\kadmium-sacn-core\kadmium-sacn-core.csproj", "{8121791E-BB45-405F-81B0-774BF8E34044}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kadmium-sacn-core-test", "kadmium-sacn-core-test\kadmium-sacn-core-test.csproj", "{7507D791-516F-47B5-8793-0D21761B1107}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kadmium-sacn-core-console", "kadmium-sacn-core-console\kadmium-sacn-core-console.csproj", "{60F6E308-D0E9-4B45-B71D-1BD53C804B03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,11 +23,24 @@ Global
 		{8121791E-BB45-405F-81B0-774BF8E34044}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8121791E-BB45-405F-81B0-774BF8E34044}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8121791E-BB45-405F-81B0-774BF8E34044}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7507D791-516F-47B5-8793-0D21761B1107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7507D791-516F-47B5-8793-0D21761B1107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7507D791-516F-47B5-8793-0D21761B1107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7507D791-516F-47B5-8793-0D21761B1107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60F6E308-D0E9-4B45-B71D-1BD53C804B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60F6E308-D0E9-4B45-B71D-1BD53C804B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60F6E308-D0E9-4B45-B71D-1BD53C804B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60F6E308-D0E9-4B45-B71D-1BD53C804B03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8121791E-BB45-405F-81B0-774BF8E34044} = {027C1A93-5E9D-4952-9426-5DBAFF13CF56}
+		{7507D791-516F-47B5-8793-0D21761B1107} = {027C1A93-5E9D-4952-9426-5DBAFF13CF56}
+		{60F6E308-D0E9-4B45-B71D-1BD53C804B03} = {027C1A93-5E9D-4952-9426-5DBAFF13CF56}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D840569F-5EEE-4E5C-934E-C989E435A7FC}
 	EndGlobalSection
 EndGlobal

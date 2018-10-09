@@ -281,7 +281,7 @@ namespace kadmium_sacn_core
             using (var stream = new MemoryStream(Length))
             using (var buffer = new BigEndianBinaryWriter(stream))
             {
-                UInt16 flagsAndDMPLength = (UInt16)(SACNPacket.FLAGS | Length);
+                UInt16 flagsAndDMPLength = (UInt16)(SACNPacket.FLAGS | (UInt16)Length);
 
                 buffer.Write(flagsAndDMPLength);
                 buffer.Write(DMP_VECTOR);

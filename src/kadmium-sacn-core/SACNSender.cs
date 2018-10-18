@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace kadmium_sacn_core
@@ -17,7 +15,7 @@ namespace kadmium_sacn_core
         public int Port { get; set; }
         public string SourceName { get; set; }
 
-        byte sequenceID = 0;
+        private readonly Dictionary<UInt16, byte> sequenceIds = new Dictionary<ushort, byte>();
 
         public SACNSender(Guid uuid, string sourceName, int port)
         {
@@ -36,7 +34,10 @@ namespace kadmium_sacn_core
         /// <param name="data">Up to 512 bytes of DMX data</param>
         public async Task Send(UInt16 universeID, byte[] data, byte priority = 100)
         {
+            this.sequenceIds.TryGetValue(universeID, out byte sequenceID);
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
+            this.sequenceIds[universeID] = sequenceID;
+
             byte[] packetBytes = packet.ToArray();
             // Why parse again? SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, GetEndPoint(universeID, Port));
@@ -50,7 +51,10 @@ namespace kadmium_sacn_core
         /// <param name="data">Up to 512 bytes of DMX data</param>
         public async Task Send(string hostname, UInt16 universeID, byte[] data, byte priority = 100)
         {
+            this.sequenceIds.TryGetValue(universeID, out byte sequenceID);
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
+            this.sequenceIds[universeID] = sequenceID;
+
             byte[] packetBytes = packet.ToArray();
             // Why parse again? SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, hostname, Port);

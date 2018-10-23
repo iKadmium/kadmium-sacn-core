@@ -51,12 +51,12 @@ namespace kadmium_sacn_core
 
     public class RootLayer
     {
-        static Int16 PREAMBLE_LENGTH = 0x0010;
-        static Int16 POSTAMBLE_LENGTH = 0x0000;
-        static byte[] PACKET_IDENTIFIER = new byte[] {0x41, 0x53, 0x43, 0x2d, 0x45,
+        static readonly Int16 PREAMBLE_LENGTH = 0x0010;
+        static readonly Int16 POSTAMBLE_LENGTH = 0x0000;
+        static readonly byte[] PACKET_IDENTIFIER = new byte[] {0x41, 0x53, 0x43, 0x2d, 0x45,
                                              0x31, 0x2e, 0x31, 0x37, 0x00,
                                              0x00, 0x00};
-        static Int32 ROOT_VECTOR = 0x00000004;
+        static readonly Int32 ROOT_VECTOR = 0x00000004;
 
         public FramingLayer FramingLayer { get; set; }
         public Int16 Length { get { return (Int16)(38 + FramingLayer.Length); } }
@@ -119,10 +119,9 @@ namespace kadmium_sacn_core
 
     public class FramingLayer
     {
-        static Int32 FRAMING_VECTOR = 0x00000002;
-        static Int16 RESERVED = 0;
-        static byte OPTIONS = 0;
-
+        static readonly Int32 FRAMING_VECTOR = 0x00000002;
+        static readonly Int16 RESERVED = 0;
+        
         public DMPLayer DMPLayer { get; set; }
         public Int16 Length { get { return (Int16)(77 + DMPLayer.Length); } }
         public string SourceName { get; set; }
@@ -197,7 +196,9 @@ namespace kadmium_sacn_core
                 SequenceID = sequenceID,
                 SourceName = sourceName,
                 DMPLayer = DMPLayer.Parse(buffer),
-                Options = options
+                Options = options,
+                UniverseID = universeID,
+                Priority = priority
             };
 
             return framingLayer;
@@ -210,9 +211,9 @@ namespace kadmium_sacn_core
         public bool StreamTerminated { get; set; }
         public bool ForceSynchronization { get; set; }
 
-        private static byte FORCE_SYNCHRONIZATION = 0b0000_1000;
-        private static byte STREAM_TERMINATED = 0b0000_0100;
-        private static byte PREVIEW_DATA = 0b0000_0010;
+        private static readonly byte FORCE_SYNCHRONIZATION = 0b0000_1000;
+        private static readonly byte STREAM_TERMINATED = 0b0000_0100;
+        private static readonly byte PREVIEW_DATA = 0b0000_0010;
         
         public Options()
         {
@@ -258,11 +259,11 @@ namespace kadmium_sacn_core
 
     public class DMPLayer
     {
-        static byte DMP_VECTOR = 2;
-        static byte ADDRESS_TYPE_AND_DATA_TYPE = 0xa1;
-        static Int16 FIRST_PROPERTY_ADDRESS = 0;
-        static Int16 ADDRESS_INCREMENT = 1;
-        static byte ZERO_ADDRESS = 0x00;
+        static readonly byte DMP_VECTOR = 2;
+        static readonly byte ADDRESS_TYPE_AND_DATA_TYPE = 0xa1;
+        static readonly Int16 FIRST_PROPERTY_ADDRESS = 0;
+        static readonly Int16 ADDRESS_INCREMENT = 1;
+        static readonly byte ZERO_ADDRESS = 0x00;
 
         public byte StartCode { get; set; }
         public Int16 Length { get { return (Int16)(11 + Data.Length); } }

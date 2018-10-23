@@ -6,7 +6,7 @@ using System.Text;
 
 namespace kadmium_sacn_core
 {
-    class BigEndianBinaryReader : BinaryReader
+    public class BigEndianBinaryReader : BinaryReader
     {
         public BigEndianBinaryReader(Stream input) : base(input)
         {

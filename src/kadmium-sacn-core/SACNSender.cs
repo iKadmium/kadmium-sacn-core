@@ -38,7 +38,6 @@ namespace kadmium_sacn_core
         {
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
             byte[] packetBytes = packet.ToArray();
-            // Why parse again? SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, GetEndPoint(universeID, Port));
         }
 
@@ -52,7 +51,6 @@ namespace kadmium_sacn_core
         {
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
             byte[] packetBytes = packet.ToArray();
-            // Why parse again? SACNPacket parsed = SACNPacket.Parse(packetBytes);
             await Socket.SendAsync(packetBytes, packetBytes.Length, hostname, Port);
         }
 

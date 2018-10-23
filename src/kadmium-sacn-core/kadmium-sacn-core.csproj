@@ -17,9 +17,9 @@
     <Description>A simple sACN library for .NET Core</Description>
     <Copyright>Copyright 2016-2018 Jesse Higginson</Copyright>
     <PackageTags>sACN;DMX</PackageTags>
-    <PackageReleaseNotes>Added better sequencing, options</PackageReleaseNotes>
+    <PackageReleaseNotes>Parsing fixes, added a listener</PackageReleaseNotes>
     <AssemblyVersion>0.0.11.0</AssemblyVersion>
-    <FileVersion>0.0.11.0</FileVersion>
+    <FileVersion>0.0.10.0</FileVersion>
   </PropertyGroup>
 
 </Project>

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace kadmium_sacn_core
@@ -17,7 +15,7 @@ namespace kadmium_sacn_core
         public int Port { get; set; }
         public string SourceName { get; set; }
 
-        byte sequenceID = 0;
+        private readonly Dictionary<UInt16, byte> sequenceIds = new Dictionary<ushort, byte>();
 
         public SACNSender(Guid uuid, string sourceName, int port)
         {
@@ -34,9 +32,12 @@ namespace kadmium_sacn_core
         /// </summary>
         /// <param name="universeID">The universe ID to multicast to</param>
         /// <param name="data">Up to 512 bytes of DMX data</param>
-        public async Task Send(Int16 universeID, byte[] data, byte priority = 100)
+        public async Task Send(UInt16 universeID, byte[] data, byte priority = 100)
         {
+            this.sequenceIds.TryGetValue(universeID, out byte sequenceID);
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
+            this.sequenceIds[universeID] = sequenceID;
+
             byte[] packetBytes = packet.ToArray();
             await Socket.SendAsync(packetBytes, packetBytes.Length, GetEndPoint(universeID, Port));
         }
@@ -47,14 +48,17 @@ namespace kadmium_sacn_core
         /// <param name="hostname">The hostname to unicast to</param>
         /// <param name="universeID">The Universe ID</param>
         /// <param name="data">Up to 512 bytes of DMX data</param>
-        public async Task Send(string hostname, Int16 universeID, byte[] data, byte priority = 100)
+        public async Task Send(string hostname, UInt16 universeID, byte[] data, byte priority = 100)
         {
+            this.sequenceIds.TryGetValue(universeID, out byte sequenceID);
             var packet = new SACNPacket(universeID, SourceName, UUID, sequenceID++, data, priority);
+            this.sequenceIds[universeID] = sequenceID;
+
             byte[] packetBytes = packet.ToArray();
             await Socket.SendAsync(packetBytes, packetBytes.Length, hostname, Port);
         }
 
-        private IPEndPoint GetEndPoint(Int16 universeID, int port)
+        private IPEndPoint GetEndPoint(UInt16 universeID, int port)
         {
             if (Multicast)
             {

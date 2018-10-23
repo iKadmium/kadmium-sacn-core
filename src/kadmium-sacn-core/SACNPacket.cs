@@ -120,61 +120,6 @@ namespace kadmium_sacn_core
         }
     }
 
-    public class FramingOptions
-    {
-        static int PreviewDataIndex = 7;
-        static int StreamTerminatedIndex = 6;
-        
-        private BitArray BitArray { get; set; }
-
-        public bool PreviewData
-        {
-            get
-            {
-                return BitArray.Get(PreviewDataIndex);
-            }
-            set
-            {
-                BitArray.Set(PreviewDataIndex, value);
-            }
-        }
-        public bool StreamTerminated
-        {
-            get
-            {
-                return BitArray.Get(StreamTerminatedIndex);
-            }
-            set
-            {
-                BitArray.Set(StreamTerminatedIndex, value);
-            }
-        }
-
-        public FramingOptions()
-        {
-            BitArray = new BitArray(8);
-        }
-
-        private FramingOptions(byte options)
-        {
-            BitArray = new BitArray(new[] { options });
-        }
-
-        public byte GetByte()
-        {
-            byte previewData = PreviewData ? (byte)(1 << PreviewDataIndex) : (byte)0;
-            byte streamTerminated = StreamTerminated ? (byte)(1 << StreamTerminatedIndex) : (byte)0;
-            return (byte)(previewData | streamTerminated);
-        }
-
-        public static FramingOptions Parse(byte options)
-        {
-            FramingOptions optionsObject = new FramingOptions(options);
-            return optionsObject;
-        }
-
-    }
-
     public class FramingLayer
     {
         static readonly Int32 FRAMING_VECTOR = 0x00000002;
@@ -186,9 +131,8 @@ namespace kadmium_sacn_core
         public string SourceName { get; set; }
         public UInt16 UniverseID { get; set; }
         public byte SequenceID { get; set; }
-        public FramingOptions Options { get; set; }
         public byte Priority { get; set; }
-        public Options Options { get; set; }
+        public FramingOptions Options { get; set; }
 
         public FramingLayer(string sourceName, UInt16 universeID, byte sequenceID, byte[] data, byte priority)
         {
@@ -198,7 +142,7 @@ namespace kadmium_sacn_core
             Options = new FramingOptions();
             DMPLayer = new DMPLayer(data);
             Priority = priority;
-            Options = new Options();
+            Options = new FramingOptions();
         }
 
         public FramingLayer()
@@ -246,9 +190,9 @@ namespace kadmium_sacn_core
             Debug.Assert(reserved == RESERVED);
             byte sequenceID = buffer.ReadByte();
             byte optionsByte = buffer.ReadByte();
-            Options options = Options.Parse(optionsByte);
+            FramingOptions options = FramingOptions.Parse(optionsByte);
 
-            Int16 universeID = buffer.ReadInt16();
+            UInt16 universeID = buffer.ReadUInt16();
 
             var framingLayer = new FramingLayer
             {
@@ -264,7 +208,7 @@ namespace kadmium_sacn_core
         }
     }
 
-    public class Options
+    public class FramingOptions
     {
         public bool PreviewData { get; set; }
         public bool StreamTerminated { get; set; }
@@ -274,14 +218,14 @@ namespace kadmium_sacn_core
         private static readonly byte STREAM_TERMINATED = 0b0000_0100;
         private static readonly byte PREVIEW_DATA = 0b0000_0010;
         
-        public Options()
+        public FramingOptions()
         {
             
         }
 
-        public static Options Parse(byte optionsByte)
+        public static FramingOptions Parse(byte optionsByte)
         {
-            Options options = new Options();
+            FramingOptions options = new FramingOptions();
             if((optionsByte & FORCE_SYNCHRONIZATION) != 0)
             {
                 options.ForceSynchronization = true;
